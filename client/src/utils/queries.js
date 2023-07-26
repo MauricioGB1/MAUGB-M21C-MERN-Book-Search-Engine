@@ -1,20 +1,23 @@
+// setup for React and Apollo Client
 import { gql } from '@apollo/client';
 
-export const QUERY_ME = gql`
-    query me {
-        me {
-            _id
-            username
-            email
-            bookCount
-            savedBooks {
-                bookId
-                title
-                description
-                authors
-                image
-                link
-            }
-        }
+// setup for User data and any saved book data
+// loads in 'SavedBooks.js'
+export const GET_ME = gql`
+  {
+    me {
+      _id
+      username
+      email
+      bookCount
+      savedBooks {
+        bookId
+        authors
+        description
+        title
+        image
+        link
+      }
     }
+  }
 `;

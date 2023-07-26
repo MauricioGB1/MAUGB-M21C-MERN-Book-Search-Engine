@@ -1,18 +1,27 @@
-import React, { useState } from 'react';
+// see SignupForm.js for comments
+import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
-import Auth from '../utils/auth';
-
-// refactored to use GraphQL API instead of RESTful API
+//import { loginUser } from '../utils/API';
+// new for refactor
 import { useMutation } from '@apollo/client';
 import { LOGIN_USER } from '../utils/mutations';
+
+import Auth from '../utils/auth';
 
 const LoginForm = () => {
   const [userFormData, setUserFormData] = useState({ email: '', password: '' });
   const [validated] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
-  
-  // refactored to use GraphQL API instead of RESTful API
-  const [login, { loading }] = useMutation(LOGIN_USER);
+  // new code
+  const [loginUser, { error }] = useMutation(LOGIN_USER);
+
+  useEffect(() => {
+    if (error) {
+      setShowAlert(true);
+    } else {
+      setShowAlert(false);
+    }
+  }, [error]);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -28,29 +37,24 @@ const LoginForm = () => {
       event.preventDefault();
       event.stopPropagation();
     }
-
+    // new code
     try {
-      const {data} = await login(
-        {
-          variables: userFormData,
-        }
-      );
-      Auth.login(data.login.token);
+      const response = await loginUser({
+        variables: {...userFormData}
+      });
+      console.log(response)
+
+      Auth.login(response.data.login.token);
     } catch (err) {
-      console.error(err);
+      console.error(error);
       setShowAlert(true);
     }
 
     setUserFormData({
-      username: '',
       email: '',
       password: '',
     });
   };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <>
