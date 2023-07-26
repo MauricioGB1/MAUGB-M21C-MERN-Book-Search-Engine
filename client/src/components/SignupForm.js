@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
-import Auth from '../utils/auth';
-// refractor to use Apollo GraphQL API instead of RESTful API
+//import { createUser } from '../utils/API';
+// for refactor, hints from classwork activities in "MERN" week 
 import { useMutation } from '@apollo/client';
 import { ADD_USER } from '../utils/mutations';
+import Auth from '../utils/auth';
 
 const SignupForm = () => {
   // set initial form state
@@ -13,9 +14,16 @@ const SignupForm = () => {
   // set state for alert
   const [showAlert, setShowAlert] = useState(false);
 
-  // get a function 'addUser' returned by useMutation hook 
-  // to execute the ADD_USER mutation in the functions below
-  const [addUser, { loading }] = useMutation(ADD_USER);
+  // new code
+  const [addUser, { error }] = useMutation(ADD_USER);
+  
+  useEffect(() => {
+    if (error) {
+      setShowAlert(true);
+    } else {
+      setShowAlert(false);
+    }
+  }, [error]);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -32,17 +40,16 @@ const SignupForm = () => {
       event.stopPropagation();
     }
 
+    // new code
     try {
-      const {data} = await addUser(
-        {
-          variables: userFormData
-        }
-      );
+      const { data } = await addUser({
+        variables: { ...userFormData },
+      });
+
       Auth.login(data.addUser.token);
     } catch (err) {
-      console.log(err);
-      setShowAlert(true);
-    }
+      console.error(err);
+    };
 
     setUserFormData({
       username: '',
@@ -50,10 +57,6 @@ const SignupForm = () => {
       password: '',
     });
   };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <>

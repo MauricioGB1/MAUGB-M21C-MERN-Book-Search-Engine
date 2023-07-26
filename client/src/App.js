@@ -1,22 +1,19 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// new
+import { ApolloClient, ApolloProvider, createHttpLink, InMemoryCache } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+
 import SearchBooks from './pages/SearchBooks';
 import SavedBooks from './pages/SavedBooks';
 import Navbar from './components/Navbar';
-import { ApolloClient, InMemoryCache, createHttpLink, ApolloProvider } from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
 
-// setup HttpLink which is the terminating link
-// with the endpoint of the GraphQL server as its uri
+// new code
+// Construct the main GraphQL API endpoint
 const httpLink = createHttpLink({
   uri: '/graphql',
 });
 
-// Call setContext() to prepare the authLink for the ApolloClient constructor.
-// Authlink will then be used for every request made by Apollo Client.
-// We pass in a function to let authLink 
-// (1) get the token from Local Storage, and
-// (2) put the token in the header 
 const authLink = setContext((_, { headers }) => {
   // get the authentication token from local storage if it exists
   const token = localStorage.getItem('id_token');
@@ -29,15 +26,11 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-// create a new ApolloClient instance and 
-// pass in the authLink and httpLink, and 
-// the cache object
 const client = new ApolloClient({
+  // Set up client to execute the `authLink` middleware prior to making the request to our GraphQL API
   link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });
-
-
 
 function App() {
   return (
@@ -46,18 +39,9 @@ function App() {
         <>
           <Navbar />
           <Routes>
-            <Route 
-              path='/' 
-              element={<SearchBooks />} 
-            />
-            <Route 
-              path='/saved' 
-              element={<SavedBooks />} 
-            />
-            <Route 
-              path='*'
-              element={<h1 className='display-2'>Wrong page!</h1>}
-            />
+            <Route path='/' element={<SearchBooks />} />
+            <Route path='/saved' element={<SavedBooks />} />
+            <Route path='*' element={<h1 className='display-2'>Wrong page!</h1>} />
           </Routes>
         </>
       </Router>
